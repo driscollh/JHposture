@@ -32,9 +32,11 @@ Navigate into the main folder and install the required Python environment packag
 Inside your main project folder, create a new subfolder named `models`
 
 ## Usage  
-Once the environment is set up, you can launch the local processing by running the main Python script in your environment:
+Once the environment is set up, you can launch the local processing by running the main Python script in your environment.
 
 `JHposture.py` 
+
+Please note, the first run requires an internet connection and will take a few minutes to download the AI weights
 
 ## Acknowledgments and Licensing  
 * **License:** Distributed under the Apache 2.0 License.
