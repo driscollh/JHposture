@@ -1,0 +1,17 @@
+# Core Environment Compatibility
+numpy==1.23.5
+opencv-contrib-python==4.8.1.78
+
+# AI Tracking Engine
+rtmlib==0.0.15
+onnxruntime
+
+# GUI & File Navigation
+PyQt5
+PyQt5-Qt5
+PyQt5_sip
+
+# Data Analysis & Visualisation
+pandas
+scipy
+matplotlib
