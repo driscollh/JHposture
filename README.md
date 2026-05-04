@@ -29,7 +29,7 @@ Navigate into the main folder and install the required Python environment packag
 `pip install --no-cache-dir -r requirements.txt`
 
 **4. Create models folder**
-Inside your main project folder, create a new subfolder name `models`
+Inside your main project folder, create a new subfolder named `models`
 
 ## Usage  
 Once the environment is set up, you can launch the local processing by running the main Python script in your environment:
