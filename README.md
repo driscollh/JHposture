@@ -31,10 +31,10 @@ Clone this repository to your local machine:
 `conda activate JHposture`  
 
 **3. Install Python Packages**  
-Navigate into the main folder and install the required Python environment packages,
+Navigate into the main folder and install the required Python environment packages:  
 `pip install --no-cache-dir -r requirements.txt`
 
-**4. Create models folder**
+**4. Create models folder**  
 Inside your main project folder, create a new subfolder named `models`
 
 ~ ~ ~
@@ -52,7 +52,7 @@ Inside your main project folder, create a new subfolder named `models`
 `conda activate JHposture`
 
 **3. Python 패키지 설치**  
-메인 폴더로 이동하여 필요한 Python 환경 패키지들을 설치합니다.
+메인 폴더로 이동하여 필요한 Python 환경 패키지들을 설치합니다:  
 `pip install --no-cache-dir -r requirements.txt`
 
 **4. models 폴더 생성**  
