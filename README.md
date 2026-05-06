@@ -78,7 +78,7 @@ Please note, the first run requires an internet connection and will take a few m
 
 참고: 첫 실행 시에는 AI 가중치(weights)를 다운로드해야 하므로 인터넷 연결이 필요하며 몇 분 정도 소요될 수 있습니다.
 
-## Acknowledgments and Licensing \ 감사의 말 및 라이선스   
+## Acknowledgments and Licensing / 감사의 말 및 라이선스   
 * **License:** Distributed under the Apache 2.0 License.
 * **라이선스**: Apache 2.0 라이선스에 따라 배포됩니다.
 
