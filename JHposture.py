@@ -13,29 +13,92 @@ from PyQt5.QtCore import Qt, QDir, QThread, pyqtSignal, QTimer
 from PyQt5.QtGui import QImage, QPixmap
 
 # =============================================================================
+# TRANSLATIONS
+# =============================================================================
+# =============================================================================
+# TRANSLATIONS
+# =============================================================================
+LANG = {
+    "en": {
+        "browse": "Browse SSD / Folder",
+        "no_dir": "No directory selected",
+        "ready": "Ready to process.",
+        "selected": "Selected: {file}",
+        "btn_track": "1. RUN TRACKING",
+        "btn_analyse": "2. RUN BEHAVIOURAL ANALYSIS",
+        "warn_title": "Warning",
+        "err_title": "Error",
+        "warn_no_file": "Please select a video file first.",
+        "warn_no_csv": "No tracking data found for this video. Please run tracking first.",
+        "warn_no_joint": "You must select at least one joint pair.",
+        "overwrite_title": "Overwrite Data?",
+        "overwrite_msg": "Data already exists for:\n{file}\n\nDo you want to overwrite it?",
+        "overwrite_analysis_title": "Overwrite Analysis Data?",
+        "overwrite_analysis_msg": "Analysis graphs and videos already exist for:\n{file}\n\nDo you want to overwrite them?",
+        "speed_title": "Processing Speed",
+        "speed_msg": "Process every Nth frame\n(1 = Slowest/Highest Fidelity, 3 = Balanced, 10 = Fastest):\n\nNote: This sets the baseline FPS for analysis filtering.",
+        "del_menu": "Delete File",
+        "del_title": "Confirm Delete",
+        "delete_confirm": "Are you sure you want to permanently delete:\n{file}?",
+        "del_err": "Could not delete file:\n{err}",
+        "joint_title": "Select Interpersonal Links",
+        "joint_desc": "Select which cross-body distances to track:",
+        "btn_ok": "Analyse",
+        "btn_lang": "🇰🇷 한국어로 변경"
+    },
+    "ko": {
+        "browse": "SSD / 폴더 찾아보기",
+        "no_dir": "선택된 디렉토리 없음",
+        "ready": "처리 준비 완료.",
+        "selected": "선택됨: {file}",
+        "btn_track": "1. 트래킹 실행",
+        "btn_analyse": "2. 행동 분석 실행",
+        "warn_title": "경고",
+        "err_title": "오류",
+        "warn_no_file": "먼저 비디오 파일을 선택해 주세요.",
+        "warn_no_csv": "이 비디오의 트래킹 데이터를 찾을 수 없습니다. 먼저 트래킹을 실행해 주세요.",
+        "warn_no_joint": "최소 하나 이상의 관절 쌍을 선택해야 합니다.",
+        "overwrite_title": "데이터 덮어쓰기?",
+        "overwrite_msg": "다음 파일의 데이터가 이미 존재합니다:\n{file}\n\n덮어쓰시겠습니까?",
+        "overwrite_analysis_title": "분석 데이터 덮어쓰기?",
+        "overwrite_analysis_msg": "다음 파일의 분석 그래프와 비디오가 이미 존재합니다:\n{file}\n\n덮어쓰시겠습니까?",
+        "speed_title": "처리 속도",
+        "speed_msg": "N번째 프레임마다 처리\n(1 = 가장 느림/최고 품질, 3 = 균형, 10 = 가장 빠름):\n\n참고: 이것은 분석 필터링의 기준 FPS를 설정합니다.",
+        "del_menu": "파일 삭제",
+        "del_title": "삭제 확인",
+        "delete_confirm": "다음을 영구적으로 삭제하시겠습니까:\n{file}?",
+        "del_err": "파일을 삭제할 수 없습니다:\n{err}",
+        "joint_title": "대인 간 링크 선택",
+        "joint_desc": "추적할 교차 신체 거리를 선택하세요:",
+        "btn_ok": "분석 실행",
+        "btn_lang": "🇬🇧 Switch to English"
+    }
+}
+
+# =============================================================================
 # MODULAR WORKER THREAD
 # =============================================================================
 class JointSelectionDialog(QDialog):
-    def __init__(self, parent=None):
+    def __init__(self, t, parent=None):
         super().__init__(parent)
-        self.setWindowTitle("Select Interpersonal Links")
+        self.setWindowTitle(t["joint_title"])
         self.setFixedSize(300, 250)
         self.setStyleSheet("background-color: #f2f1ec; color: #222222;")
         layout = QVBoxLayout(self)
         
-        layout.addWidget(QLabel("Select which cross-body distances to track:"))
+        layout.addWidget(QLabel(t["joint_desc"]))
         
         self.checkboxes = {}
         categories = ["Nose", "Shoulders", "Elbows", "Wrists", "Hips", "Ankles"]
         
         for cat in categories:
             chk = QCheckBox(cat)
-            chk.setChecked(True) # Default all to checked
+            chk.setChecked(True)
             layout.addWidget(chk)
             self.checkboxes[cat] = chk
             
         btn_layout = QHBoxLayout()
-        btn_ok = QPushButton("Analyse")
+        btn_ok = QPushButton(t["btn_ok"])
         btn_ok.setStyleSheet("background-color: #6184D8; color: white; font-weight: bold;")
         btn_ok.clicked.connect(self.accept)
         btn_layout.addWidget(btn_ok)
@@ -245,20 +308,40 @@ class JHposeGUI(QMainWindow):
         """)
 
     def _init_ui(self):
+        self.current_lang = "en"
+
         central = QWidget()
         self.setCentralWidget(central)
         layout = QVBoxLayout(central)
 
         # --- Top Bar ---
         top_bar = QHBoxLayout()
-        self.lbl_current_dir = QLabel("No directory selected")
-        self.lbl_current_dir.setStyleSheet("color: #666; font-style: italic; background-color: transparent;")
+        self.lbl_current_dir = QLabel(LANG[self.current_lang]["no_dir"])
+        self.lbl_current_dir.setStyleSheet("color: #666; background-color: transparent;")
         
-        btn_browse = QPushButton("Browse SSD / Folder")
-        btn_browse.clicked.connect(self._browse_directory)
+        self.btn_browse = QPushButton(LANG[self.current_lang]["browse"])
+        self.btn_browse.clicked.connect(self._browse_directory)
         
-        top_bar.addWidget(btn_browse)
+        # --- Language Toggle Button ---
+        self.btn_lang_toggle = QPushButton(LANG[self.current_lang]["btn_lang"])
+        self.btn_lang_toggle.setStyleSheet("""
+            QPushButton {
+                background-color: #ffffff; 
+                border: 1px solid #6184D8; 
+                color: #6184D8; 
+                border-radius: 4px; 
+                padding: 4px 12px; 
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #e6ebf7;
+            }
+        """)
+        self.btn_lang_toggle.clicked.connect(self._toggle_language)
+        
+        top_bar.addWidget(self.btn_browse)
         top_bar.addWidget(self.lbl_current_dir, 1)
+        top_bar.addWidget(self.btn_lang_toggle)
         layout.addLayout(top_bar)
 
         # --- Main Splitter (3 Panels) ---
@@ -291,14 +374,14 @@ class JHposeGUI(QMainWindow):
         right_panel.setStyleSheet("QFrame { background-color: #ffffff; border: 1px solid #cccccc; border-radius: 4px; }")
         right_layout = QVBoxLayout(right_panel)
         
-        self.lbl_selected_file = QLabel("Ready to process.")
+        self.lbl_selected_file = QLabel(LANG[self.current_lang]["ready"])
         self.lbl_selected_file.setStyleSheet("border: none; font-weight: bold;")
         
-        self.btn_run = QPushButton("RUN PROCESSING")
+        self.btn_run = QPushButton(LANG[self.current_lang]["btn_track"])
         self.btn_run.setObjectName("AccentButton")
         self.btn_run.clicked.connect(self._run_pipeline)
 
-        self.btn_analyse = QPushButton("2. RUN BEHAVIORAL ANALYSIS")
+        self.btn_analyse = QPushButton(LANG[self.current_lang]["btn_analyse"])
         self.btn_analyse.setStyleSheet("background-color: #388e3c; color: white; border-radius: 4px; padding: 6px 12px; font-weight: bold;")
         self.btn_analyse.clicked.connect(self._run_analysis)
         
@@ -320,6 +403,23 @@ class JHposeGUI(QMainWindow):
         splitter.setSizes([240, 660, 300])
         layout.addWidget(splitter, 1)
 
+    def _toggle_language(self):
+        # Swap language
+        self.current_lang = "ko" if self.current_lang == "en" else "en"
+        
+        # Update UI Elements
+        t = LANG[self.current_lang]
+        self.btn_lang_toggle.setText(t["btn_lang"])
+        self.btn_browse.setText(t["browse"])
+        self.btn_run.setText(t["btn_track"])
+        self.btn_analyse.setText(t["btn_analyse"])
+        
+        # Update labels if they are in their default state
+        if "Ready" in self.lbl_selected_file.text() or "준비" in self.lbl_selected_file.text():
+            self.lbl_selected_file.setText(t["ready"])
+        if "No directory" in self.lbl_current_dir.text() or "선택된 디렉토리" in self.lbl_current_dir.text():
+            self.lbl_current_dir.setText(t["no_dir"])
+
     def _browse_directory(self):
         folder = QFileDialog.getExistingDirectory(self, "Select Root Folder")
         if folder:
@@ -332,38 +432,38 @@ class JHposeGUI(QMainWindow):
         path = self.file_model.filePath(index)
         if os.path.isfile(path):
             self.selected_file = path
-            self.lbl_selected_file.setText(f"Selected: {os.path.basename(path)}")
-            # Load video into the player!
+            # Translate the "Selected: " prefix
+            t = LANG[self.current_lang]
+            self.lbl_selected_file.setText(t["selected"].format(file=os.path.basename(path)))
             self.video_player.load_video(path)
 
     def _run_pipeline(self):
+        t = LANG[self.current_lang] 
+        
         if not self.selected_file:
-            QMessageBox.warning(self, "Warning", "Please select a video file from the tree first.")
+            QMessageBox.warning(self, t["warn_title"], t["warn_no_file"])
             return
 
-        # Auto-correct to original video if an overlay is selected
         target_file = self._get_original_video_path(self.selected_file)
 
-        # OVERWRITE CHECK
         csv_path = os.path.splitext(target_file)[0] + "_tracking_data.csv"
         if os.path.exists(csv_path):
             reply = QMessageBox.question(
-                self, 'Overwrite Tracking Data?', 
-                f"Tracking data already exists for:\n{os.path.basename(target_file)}\n\nDo you want to overwrite it?", 
+                self, t["overwrite_title"], 
+                t["overwrite_msg"].format(file=os.path.basename(target_file)), 
                 QMessageBox.Yes | QMessageBox.No, QMessageBox.No
             )
             if reply == QMessageBox.No:
                 return
 
-        # POPUP 1: Ask for Frame Skip
+        # POPUP 1: Fully Translated Speed Prompt
         skip_val, ok = QInputDialog.getInt(
-            self, "Processing Speed", 
-            "Process every Nth frame\n(1 = Slowest/Highest Fidelity, 3 = Balanced, 10 = Fastest):\n\nNote: This sets the baseline FPS for analysis filtering.",
-            3, 1, 30, 1
+            self, t["speed_title"], t["speed_msg"], 3, 1, 30, 1
         )
-        if not ok: return # User clicked cancel
+        if not ok: return 
 
         self.btn_run.setEnabled(False)
+        self.btn_analyse.setEnabled(False)
         self.progress_bar.setValue(0)
         self.log_box.append(f"\n>>> Starting pipeline for: {os.path.basename(self.selected_file)}")
         
@@ -388,36 +488,35 @@ class JHposeGUI(QMainWindow):
             self.progress_bar.setStyleSheet("QProgressBar::chunk { background-color: #e57373; }") # Red if error
 
     def _run_analysis(self):
+        t = LANG[self.current_lang] # <-- Define 't' first!
+
         if not self.selected_file:
-            QMessageBox.warning(self, "Warning", "Please select a video file first.")
+            QMessageBox.warning(self, t["warn_title"], t["warn_no_file"])
             return
 
-        # Auto-correct to original video if an overlay is selected
         target_file = self._get_original_video_path(self.selected_file)
 
-        # Ensure the CSV actually exists before trying to analyse it
         csv_path = os.path.splitext(target_file)[0] + "_tracking_data.csv"
         if not os.path.exists(csv_path):
-            QMessageBox.warning(self, "Error", "No tracking data found for this video. Please run tracking first.")
+            QMessageBox.warning(self, t["err_title"], t["warn_no_csv"])
             return
 
-        # OVERWRITE CHECK (For analysis graphs/videos)
         graph_path = os.path.splitext(target_file)[0] + "_kinematics_comparison.png"
         if os.path.exists(graph_path):
             reply = QMessageBox.question(
-                self, 'Overwrite Analysis Data?', 
-                f"Analysis graphs and videos already exist for:\n{os.path.basename(target_file)}\n\nDo you want to overwrite them?", 
+                self, t["overwrite_analysis_title"], 
+                t["overwrite_analysis_msg"].format(file=os.path.basename(target_file)), 
                 QMessageBox.Yes | QMessageBox.No, QMessageBox.No
             )
             if reply == QMessageBox.No:
                 return
 
-        # POPUP 2: Ask for Joint Selection
-        dialog = JointSelectionDialog(self)
+        # POPUP 2: Pass the language dictionary into the dialog
+        dialog = JointSelectionDialog(t, self)
         if dialog.exec_():
             selected_joints = dialog.get_selected()
             if not selected_joints:
-                QMessageBox.warning(self, "Warning", "You must select at least one joint pair.")
+                QMessageBox.warning(self, t["warn_title"], t["warn_no_joint"])
                 return
 
             self.btn_run.setEnabled(False)
@@ -464,16 +563,16 @@ class JHposeGUI(QMainWindow):
             
         path = self.file_model.filePath(index)
         if os.path.isfile(path):
+            t = LANG[self.current_lang] # <-- Get translation
             menu = QMenu()
-            delete_action = menu.addAction("Delete File")
+            delete_action = menu.addAction(t["del_menu"])
             
-            # Show the menu at the cursor's location
             action = menu.exec_(self.tree.viewport().mapToGlobal(position))
             
             if action == delete_action:
                 reply = QMessageBox.question(
-                    self, 'Confirm Delete', 
-                    f"Are you sure you want to permanently delete:\n{os.path.basename(path)}?", 
+                    self, t["del_title"], 
+                    t["delete_confirm"].format(file=os.path.basename(path)), 
                     QMessageBox.Yes | QMessageBox.No, QMessageBox.No
                 )
                 
@@ -481,13 +580,12 @@ class JHposeGUI(QMainWindow):
                     try:
                         os.remove(path)
                         self.log_box.append(f"> Deleted: {os.path.basename(path)}")
-                        # If they deleted the currently loaded video, clear the viewer
                         if self.selected_file == path:
                             self.selected_file = None
-                            self.lbl_selected_file.setText("Ready to process.")
+                            self.lbl_selected_file.setText(t["ready"])
                             self.video_player.stop()
                     except Exception as e:
-                        QMessageBox.warning(self, "Error", f"Could not delete file:\n{str(e)}")
+                        QMessageBox.warning(self, t["err_title"], t["del_err"].format(err=str(e)))
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
